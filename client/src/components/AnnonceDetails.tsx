@@ -457,7 +457,7 @@ export default function AnnonceDetails({ annonceId, onBack, onOpenAnnonce, onOpe
                     <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                         {annonceImages.length > 0 ? (
                             <div className="mb-5">
-                                <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                                <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                                     <img
                                         src={annonceImages[activeImageIndex]}
                                         alt={`${annonce.titre} ${activeImageIndex + 1}`}
@@ -473,7 +473,7 @@ export default function AnnonceDetails({ annonceId, onBack, onOpenAnnonce, onOpe
                                                 onClick={goToPreviousImage}
                                                 onMouseEnter={() => setIsCarouselPaused(true)}
                                                 onMouseLeave={() => setIsCarouselPaused(false)}
-                                                className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/25 text-white shadow-[0_8px_24px_rgba(15,23,42,0.35)] backdrop-blur-md transition hover:scale-105 hover:bg-white/35"
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/25 text-white opacity-0 pointer-events-none shadow-[0_8px_24px_rgba(15,23,42,0.35)] backdrop-blur-md transition duration-200 group-hover:opacity-100 group-hover:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto hover:scale-105 hover:bg-white/35"
                                                 aria-label="Image precedente"
                                             >
                                                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -485,7 +485,7 @@ export default function AnnonceDetails({ annonceId, onBack, onOpenAnnonce, onOpe
                                                 onClick={goToNextImage}
                                                 onMouseEnter={() => setIsCarouselPaused(true)}
                                                 onMouseLeave={() => setIsCarouselPaused(false)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/25 text-white shadow-[0_8px_24px_rgba(15,23,42,0.35)] backdrop-blur-md transition hover:scale-105 hover:bg-white/35"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/25 text-white opacity-0 pointer-events-none shadow-[0_8px_24px_rgba(15,23,42,0.35)] backdrop-blur-md transition duration-200 group-hover:opacity-100 group-hover:pointer-events-auto focus-visible:opacity-100 focus-visible:pointer-events-auto hover:scale-105 hover:bg-white/35"
                                                 aria-label="Image suivante"
                                             >
                                                 <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

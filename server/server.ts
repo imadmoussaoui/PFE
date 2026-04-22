@@ -5,22 +5,27 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { connectDB, disconnectDB } from './db';
 import authRoutes from './routes/auth';
+import annonceRoutes from './routes/annonces';
+import reviewRoutes from './routes/reviews';
 
 // Load environment variables
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT || 5000;
+const requestBodyLimit = process.env.REQUEST_BODY_LIMIT || '15mb';
 
 // Middleware
 app.use(helmet()); // Security headers
 app.use(cors()); // Enable CORS
 app.use(morgan('dev')); // Logger
-app.use(express.json()); // Parse JSON bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(express.json({ limit: requestBodyLimit })); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true, limit: requestBodyLimit })); // Parse URL-encoded bodies
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/annonces', annonceRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {
@@ -34,6 +39,12 @@ app.get('/health', (req: Request, res: Response) => {
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  if ((err as Error & { type?: string }).type === 'entity.too.large') {
+    return res.status(413).json({
+      message: 'Les images sont trop volumineuses. Reduisez leur taille ou leur nombre, puis reessayez.',
+    });
+  }
+
   console.error(err.stack);
   res.status(500).json({
     message: 'Internal Server Error',

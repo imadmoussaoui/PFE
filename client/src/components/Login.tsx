@@ -1,21 +1,33 @@
 import { useState } from 'react';
+import { useAuth } from '../context/useAuth';
+import { resizeImage, validateImageFile } from '../utils/imageUtils';
+import { MOROCCO_CITIES } from '../utils/moroccoCities';
 
 type AuthMode = 'login' | 'register';
 
-export default function Login({ onBack }: { onBack: () => void }) {
+export default function Login({ onBack, onLoginSuccess }: { onBack: () => void; onLoginSuccess?: (user: import('../context/AuthContext').User) => void }) {
     const [mode, setMode] = useState<AuthMode>('login');
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const { login } = useAuth();
+    const [photoPreview, setPhotoPreview] = useState('');
+    const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
 
     const [formData, setFormData] = useState({
-        name: '',
+        nom: '',
+        prenom: '',
+        sexe: '',
+        adresse: '',
+        ville: '',
+        telephone: '',
         email: '',
         password: '',
         confirmPassword: '',
         userType: 'utilisateur',
-        cnie: '',
+        cni: '',
+        profilePhoto: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -24,6 +36,34 @@ export default function Login({ onBack }: { onBack: () => void }) {
             ...prev,
             [name]: value,
         }));
+    };
+
+    const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) {
+            return;
+        }
+
+        if (!validateImageFile(file)) {
+            setError('Veuillez sélectionner un fichier image valide (png, jpg, jpeg, gif) de moins de 5MB.');
+            return;
+        }
+
+        setIsProcessingPhoto(true);
+        try {
+            // Resize the image to 200x200 pixels
+            const resizedImage = await resizeImage(file, 200, 200, 0.8);
+            setFormData((prev) => ({
+                ...prev,
+                profilePhoto: resizedImage,
+            }));
+            setPhotoPreview(resizedImage);
+        } catch (error) {
+            console.error('Error resizing image:', error);
+            setError('Erreur lors du traitement de l\'image. Veuillez réessayer.');
+        } finally {
+            setIsProcessingPhoto(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -44,10 +84,18 @@ export default function Login({ onBack }: { onBack: () => void }) {
         };
 
         if (mode === 'register') {
-            payload.name = formData.name;
+            payload.nom = formData.nom;
+            payload.prenom = formData.prenom;
+            payload.sexe = formData.sexe;
+            payload.adresse = formData.adresse;
+            payload.ville = formData.ville;
+            payload.telephone = formData.telephone;
             payload.userType = formData.userType;
             if (formData.userType === 'artisan') {
-                payload.cnie = formData.cnie;
+                payload.cni = formData.cni;
+            }
+            if (formData.profilePhoto) {
+                payload.profilePhoto = formData.profilePhoto;
             }
         }
 
@@ -68,17 +116,36 @@ export default function Login({ onBack }: { onBack: () => void }) {
                 return;
             }
 
-            localStorage.setItem('token', data.token);
+            // Use AuthContext to store user data
+            login(data.user, data.token);
             setSuccessMessage(mode === 'login' ? 'Connexion réussie !' : 'Inscription réussie !');
 
             setTimeout(() => {
                 setSubmitted(false);
                 if (mode === 'login') {
-                    onBack();
+                    if (onLoginSuccess) {
+                        onLoginSuccess(data.user);
+                    } else {
+                        onBack();
+                    }
                 } else {
-                    setMode('login');
+                    onBack();
+                    setPhotoPreview('');
                 }
-                setFormData({ name: '', email: '', password: '', confirmPassword: '', userType: 'utilisateur', cnie: '' });
+                setFormData({
+                    nom: '',
+                    prenom: '',
+                    sexe: '',
+                    adresse: '',
+                    ville: '',
+                    telephone: '',
+                    email: '',
+                    password: '',
+                    confirmPassword: '',
+                    userType: 'utilisateur',
+                    cni: '',
+                    profilePhoto: '',
+                });
             }, 1500);
         } catch (fetchError) {
             console.error(fetchError);
@@ -152,39 +219,165 @@ export default function Login({ onBack }: { onBack: () => void }) {
                             </div>
                         )}
 
-                        {mode === 'register' && formData.userType === 'artisan' && (
+                        {mode === 'register' && (
                             <div>
-                                <label htmlFor="cnie" className="block text-sm font-semibold text-slate-900">
-                                    CNIE
+                                <label htmlFor="nom" className="block text-sm font-semibold text-slate-900">
+                                    Nom
                                 </label>
                                 <input
                                     type="text"
-                                    id="cnie"
-                                    name="cnie"
-                                    value={formData.cnie}
+                                    id="nom"
+                                    name="nom"
+                                    value={formData.nom}
                                     onChange={handleChange}
                                     required
                                     className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 placeholder-slate-500 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-                                    placeholder="Entrez votre numéro CNIE"
+                                    placeholder="Votre nom"
                                 />
                             </div>
                         )}
 
                         {mode === 'register' && (
                             <div>
-                                <label htmlFor="name" className="block text-sm font-semibold text-slate-900">
-                                    Nom complet
+                                <label htmlFor="prenom" className="block text-sm font-semibold text-slate-900">
+                                    Prénom
                                 </label>
                                 <input
                                     type="text"
-                                    id="name"
-                                    name="name"
-                                    value={formData.name}
+                                    id="prenom"
+                                    name="prenom"
+                                    value={formData.prenom}
                                     onChange={handleChange}
                                     required
                                     className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 placeholder-slate-500 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-                                    placeholder="Jean Dupont"
+                                    placeholder="Votre prénom"
                                 />
+                            </div>
+                        )}
+
+                        {mode === 'register' && (
+                            <div>
+                                <label htmlFor="sexe" className="block text-sm font-semibold text-slate-900">
+                                    Sexe
+                                </label>
+                                <select
+                                    id="sexe"
+                                    name="sexe"
+                                    value={formData.sexe}
+                                    onChange={handleChange}
+                                    required
+                                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                >
+                                    <option value="">Sélectionnez le sexe</option>
+                                    <option value="Homme">Homme</option>
+                                    <option value="Femme">Femme</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {mode === 'register' && (
+                            <div>
+                                <label htmlFor="adresse" className="block text-sm font-semibold text-slate-900">
+                                    Adresse
+                                </label>
+                                <input
+                                    type="text"
+                                    id="adresse"
+                                    name="adresse"
+                                    value={formData.adresse}
+                                    onChange={handleChange}
+                                    required
+                                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 placeholder-slate-500 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                    placeholder="Votre adresse"
+                                />
+                            </div>
+                        )}
+
+                        {mode === 'register' && (
+                            <div>
+                                <label htmlFor="ville" className="block text-sm font-semibold text-slate-900">
+                                    Ville
+                                </label>
+                                <select
+                                    id="ville"
+                                    name="ville"
+                                    value={formData.ville}
+                                    onChange={handleChange}
+                                    required
+                                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                >
+                                    <option value="">Sélectionnez une ville</option>
+                                    {MOROCCO_CITIES.map((city) => (
+                                        <option key={city} value={city}>
+                                            {city}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {mode === 'register' && (
+                            <div>
+                                <label htmlFor="telephone" className="block text-sm font-semibold text-slate-900">
+                                    Téléphone
+                                </label>
+                                <input
+                                    type="tel"
+                                    id="telephone"
+                                    name="telephone"
+                                    value={formData.telephone}
+                                    onChange={handleChange}
+                                    required
+                                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 placeholder-slate-500 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                    placeholder="06XXXXXXXX"
+                                />
+                            </div>
+                        )}
+
+                        {mode === 'register' && formData.userType === 'artisan' && (
+                            <div>
+                                <label htmlFor="cni" className="block text-sm font-semibold text-slate-900">
+                                    CNI
+                                </label>
+                                <input
+                                    type="text"
+                                    id="cni"
+                                    name="cni"
+                                    value={formData.cni}
+                                    onChange={handleChange}
+                                    required
+                                    className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-900 placeholder-slate-500 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                                    placeholder="Entrez votre numéro CNI"
+                                />
+                            </div>
+                        )}
+
+                        {mode === 'register' && (
+                            <div>
+                                <label htmlFor="profilePhoto" className="block text-sm font-semibold text-slate-900">
+                                    Photo de profil (facultatif)
+                                </label>
+                                <input
+                                    type="file"
+                                    id="profilePhoto"
+                                    name="profilePhoto"
+                                    accept="image/png,image/jpeg,image/jpg,image/gif"
+                                    onChange={handlePhotoChange}
+                                    disabled={isProcessingPhoto}
+                                    className="mt-2 block w-full text-sm text-slate-900 file:mr-4 file:rounded-full file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-slate-700 hover:file:bg-slate-200 disabled:opacity-50"
+                                />
+                                {isProcessingPhoto && (
+                                    <div className="mt-4 flex items-center justify-center h-24 w-24 rounded-full border border-slate-200 bg-slate-50">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-600"></div>
+                                    </div>
+                                )}
+                                {photoPreview && !isProcessingPhoto && (
+                                    <img
+                                        src={photoPreview}
+                                        alt="Aperçu de la photo de profil"
+                                        className="mt-4 h-24 w-24 rounded-full border border-slate-200 object-cover"
+                                    />
+                                )}
                             </div>
                         )}
 
@@ -276,7 +469,20 @@ export default function Login({ onBack }: { onBack: () => void }) {
                                 type="button"
                                 onClick={() => {
                                     setMode(mode === 'login' ? 'register' : 'login');
-                                    setFormData({ name: '', email: '', password: '', confirmPassword: '', userType: 'utilisateur', cnie: '' });
+                                    setFormData({
+                                        nom: '',
+                                        prenom: '',
+                                        sexe: '',
+                                        adresse: '',
+                                        ville: '',
+                                        telephone: '',
+                                        email: '',
+                                        password: '',
+                                        confirmPassword: '',
+                                        userType: 'utilisateur',
+                                        cni: '',
+                                        profilePhoto: '',
+                                    });
                                 }}
                                 className="font-semibold text-sky-600 hover:text-sky-700"
                             >
@@ -285,7 +491,7 @@ export default function Login({ onBack }: { onBack: () => void }) {
                         </p>
                     </form>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

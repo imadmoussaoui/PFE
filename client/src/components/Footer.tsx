@@ -1,4 +1,4 @@
-export default function Footer() {
+export default function Footer({ onOpenLegalPage }: { onOpenLegalPage: (page: 'privacy' | 'terms' | 'cookies' | 'gdpr') => void }) {
     return (
         <footer className="bg-slate-900 text-white">
             <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
@@ -36,10 +36,26 @@ export default function Footer() {
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold">Légal</h3>
                         <ul className="space-y-2 text-sm text-slate-300">
-                            <li><a href="#privacy" className="hover:text-white transition">Politique de confidentialité</a></li>
-                            <li><a href="#terms" className="hover:text-white transition">Conditions d'utilisation</a></li>
-                            <li><a href="#cookies" className="hover:text-white transition">Politique des cookies</a></li>
-                            <li><a href="#gdpr" className="hover:text-white transition">RGPD</a></li>
+                            <li>
+                                <button type="button" onClick={() => onOpenLegalPage('privacy')} className="hover:text-white transition">
+                                    Politique de confidentialité
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" onClick={() => onOpenLegalPage('terms')} className="hover:text-white transition">
+                                    Conditions d'utilisation
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" onClick={() => onOpenLegalPage('cookies')} className="hover:text-white transition">
+                                    Politique des cookies
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" onClick={() => onOpenLegalPage('gdpr')} className="hover:text-white transition">
+                                    RGPD
+                                </button>
+                            </li>
                         </ul>
                     </div>
 

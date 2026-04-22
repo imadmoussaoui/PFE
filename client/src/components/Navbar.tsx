@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useAuth } from '../context/useAuth';
+import DEFAULT_AVATAR from '../utils/defaultAvatar';
 
 const navLinks = [
     { label: 'Accueil', href: '#home' },
@@ -6,9 +8,11 @@ const navLinks = [
     { label: 'Statut', href: '#status' },
 ];
 
-export default function Navbar({ onContactClick, onLoginClick, onHomeClick }: { onContactClick: () => void; onLoginClick: () => void; onHomeClick: () => void }) {
+export default function Navbar({ onContactClick, onLoginClick, onHomeClick, onDashboardClick, onAnnoncesClick, onMesAnnoncesClick, onAdminClick }: { onContactClick: () => void; onLoginClick: () => void; onHomeClick: () => void; onDashboardClick: () => void; onAnnoncesClick: () => void; onMesAnnoncesClick: () => void; onAdminClick: () => void }) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const { user, logout } = useAuth();
 
     return (
         <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-xl backdrop-saturate-150">
@@ -45,6 +49,12 @@ export default function Navbar({ onContactClick, onLoginClick, onHomeClick }: { 
                             </a>
                         )
                     ))}
+                    <button
+                        onClick={onAnnoncesClick}
+                        className="cursor-pointer text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                    >
+                        Annonces
+                    </button>
                 </nav>
 
                 <div className="hidden items-center gap-3 md:flex">
@@ -71,13 +81,51 @@ export default function Navbar({ onContactClick, onLoginClick, onHomeClick }: { 
                     >
                         Contact
                     </button>
-                    <button
-                        type="button"
-                        onClick={onLoginClick}
-                        className="cursor-pointer rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
-                    >
-                        Connexion
-                    </button>
+                    {user ? (
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                className="cursor-pointer flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
+                            >
+                                <img
+                                    src={user.profilePhoto || DEFAULT_AVATAR}
+                                    alt={user.name}
+                                    className="h-6 w-6 rounded-full object-cover"
+                                />
+                                {user.name.split(' ')[0]}
+                                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M6 9l6 6 6-6" />
+                                </svg>
+                            </button>
+                            {isDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-slate-200 bg-white shadow-lg z-50">
+                                    <button onClick={() => { onDashboardClick(); setIsDropdownOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 rounded-t-2xl cursor-pointer">
+                                        Mon profil
+                                    </button>
+                                    <button onClick={() => { onMesAnnoncesClick(); setIsDropdownOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer border-t border-slate-200">
+                                        Mes annonces
+                                    </button>
+                                    {user.role === 'admin' && (
+                                        <button onClick={() => { onAdminClick(); setIsDropdownOpen(false); }} className="w-full text-left px-4 py-3 text-sm text-sky-700 font-semibold hover:bg-sky-50 cursor-pointer border-t border-slate-200">
+                                            Administration
+                                        </button>
+                                    )}
+                                    <button onClick={() => { logout(); setIsDropdownOpen(false); onHomeClick(); }} className="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 rounded-b-2xl border-t border-slate-200 cursor-pointer">
+                                        Déconnexion
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={onLoginClick}
+                            className="cursor-pointer rounded-full bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
+                        >
+                            Connexion
+                        </button>
+                    )}
                 </div>
 
                 <button
@@ -142,6 +190,13 @@ export default function Navbar({ onContactClick, onLoginClick, onHomeClick }: { 
                         ))}
                         <button
                             type="button"
+                            onClick={() => { onAnnoncesClick(); setIsOpen(false); }}
+                            className="block w-full rounded-2xl px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                        >
+                            Annonces
+                        </button>
+                        <button
+                            type="button"
                             onClick={() => {
                                 onContactClick();
                                 setIsOpen(false);
@@ -150,16 +205,58 @@ export default function Navbar({ onContactClick, onLoginClick, onHomeClick }: { 
                         >
                             Contact
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                onLoginClick();
-                                setIsOpen(false);
-                            }}
-                            className="block w-full rounded-2xl border border-sky-600 bg-sky-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-700"
-                        >
-                            Login
-                        </button>
+                        {user ? (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onDashboardClick();
+                                        setIsOpen(false);
+                                    }}
+                                    className="block w-full rounded-2xl border border-sky-600 bg-sky-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-700 cursor-pointer"
+                                >
+                                    Mon profil
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { onMesAnnoncesClick(); setIsOpen(false); }}
+                                    className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50 cursor-pointer"
+                                >
+                                    Mes annonces
+                                </button>
+                                {user.role === 'admin' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { onAdminClick(); setIsOpen(false); }}
+                                        className="block w-full rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-center text-sm font-semibold text-sky-700 transition hover:bg-sky-100 cursor-pointer"
+                                    >
+                                        Administration
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        logout();
+                                        setIsOpen(false);
+                                        onHomeClick();
+                                    }}
+                                    className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50 cursor-pointer"
+                                >
+                                    Déconnexion
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onLoginClick();
+                                    setIsOpen(false);
+                                }}
+                                className="block w-full rounded-2xl border border-sky-600 bg-sky-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-700"
+                            >
+                                Connexion
+                            </button>
+                        )}
                     </div>
                 </div>
             ) : null}

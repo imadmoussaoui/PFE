@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { connectDB, disconnectDB } from './db';
+import authRoutes from './routes/auth';
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +18,9 @@ app.use(cors()); // Enable CORS
 app.use(morgan('dev')); // Logger
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Basic Route
 app.get('/', (req: Request, res: Response) => {
@@ -36,17 +41,31 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// Start Server
-const server = app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+async function startServer() {
+  try {
+    await connectDB();
 
-// Graceful Shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-  });
-});
+    const server = app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+
+    const gracefulShutdown = async () => {
+      console.log('Shutdown signal received: closing HTTP server');
+      server.close(async () => {
+        await disconnectDB();
+        console.log('HTTP server closed');
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGTERM', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;

@@ -1,1 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.p-8 {
+    padding: calc(var(--spacing) * 8);
+    margin-bottom: 20px;
+}

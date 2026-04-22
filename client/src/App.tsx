@@ -1,90 +1,117 @@
 import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
+import Contact from './components/Contact';
+import Login from './components/Login';
+import Footer from './components/Footer';
 
 export default function App() {
-  const [serverStatus, setServerStatus] = useState<string>('Checking...');
+  const [currentPage, setCurrentPage] = useState<'home' | 'contact' | 'login'>('home');
 
   useEffect(() => {
-    const checkServer = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/health`);
-        const data = await response.json();
-        setServerStatus(`Server is ${data.status}`);
-      } catch (error) {
-        setServerStatus('Server not reachable');
-      }
-    };
-
-    checkServer();
-  }, []);
+    window.scrollTo(0, 0);
+  }, [currentPage]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <Navbar />
+      <Navbar onContactClick={() => setCurrentPage('contact')} onLoginClick={() => setCurrentPage('login')} onHomeClick={() => setCurrentPage('home')} />
 
-      <main className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
-        <section id="home" className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-          <div className="space-y-6">
-            <p className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-sm font-semibold text-sky-700">
-              Tailwind + React
-            </p>
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-              Build a modern navbar with Tailwind CSS.
-            </h1>
-            <p className="max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
-              This responsive navigation bar is designed for desktop and mobile, using clean Tailwind utilities and a polished brand presentation.
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <a href="#status" className="inline-flex w-full items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto">
-                View server status
-              </a>
-              <a href="#features" className="inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 sm:w-auto">
-                Explore features
-              </a>
+      {currentPage === 'contact' ? (
+        <Contact onBack={() => setCurrentPage('home')} />
+      ) : currentPage === 'login' ? (
+        <Login onBack={() => setCurrentPage('home')} />
+      ) : (
+        <main className="mx-auto max-w-7xl px-6 py-12 sm:px-8">
+          <section id="services" className="mt-20">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                Services disponibles
+              </h2>
+              <p className="mt-4 text-lg leading-8 text-slate-600">
+                Des professionnels qualifiés pour tous vos besoins
+              </p>
             </div>
-          </div>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+              {[
+                { name: 'Plombier', icon: '🔧' },
+                { name: 'Électricien', icon: '⚡' },
+                { name: 'Technicien CVC', icon: '🌡️' },
+                { name: 'Dépannage routier', icon: '🚗' },
+                { name: 'Mécanicien mobile', icon: '🔨' },
+                { name: 'Serrurier', icon: '🔑' },
+                { name: 'Charpentier', icon: '🪚' },
+                { name: 'Peintre', icon: '🎨' },
+                { name: 'Nettoyage professionnel', icon: '🧹' },
+                { name: 'Entretien de piscine', icon: '🏊' },
+                { name: 'Installation CCTV', icon: '📹' },
+                { name: 'Transport de marchandises', icon: '🚚' },
+                { name: 'Jardinier', icon: '🌳' },
+                { name: 'Désinsectisation', icon: '🐛' },
+                { name: 'Service de pneus mobile', icon: '🛞' },
+                { name: 'Technicien d\'appareils', icon: '🔌' },
+              ].map((service) => (
+                <div key={service.name} className="flex flex-col items-center rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                  <div className="text-4xl">{service.icon}</div>
+                  <h3 className="mt-4 text-sm font-semibold text-slate-900 text-center">{service.name}</h3>
+                </div>
+              ))}
+            </div>
+          </section>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-500">Server health</span>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
-                  Online
-                </span>
-              </div>
-              <div className="rounded-3xl bg-slate-950 p-6 text-white">
-                <p className="text-sm uppercase tracking-[0.2em] text-slate-400">API status</p>
-                <p className="mt-4 text-3xl font-semibold">{serverStatus}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  This section updates from the server health endpoint in the backend.
-                </p>
-              </div>
+          <section id="testimonials" className="mt-20">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                Ce que disent nos clients
+              </h2>
+              <p className="mt-4 text-lg leading-8 text-slate-600">
+                Des milliers de clients satisfaits partout au Maroc
+              </p>
             </div>
-          </div>
-        </section>
+            <div className="mt-10 grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  name: 'Fatima Zahra',
+                  location: 'Maarif, Casablanca',
+                  avatar: '👩',
+                  testimonial: 'Excellent plombier trouvé en moins de 30 minutes! Travail professionnel et prix honnête.',
+                  rating: 5
+                },
+                {
+                  name: 'Mohammed',
+                  location: 'Anfa, Casablanca',
+                  avatar: '👨',
+                  testimonial: 'J\'ai trouvé un électricien qualifié rapidement. Le badge "Vérifié" m\'a mis en confiance.',
+                  rating: 5
+                },
+                {
+                  name: 'Amina',
+                  location: 'Hay Hassani',
+                  avatar: '👩',
+                  testimonial: 'Plateforme très facile à utiliser. J\'ai pu comparer plusieurs artisans avant de choisir.',
+                  rating: 5
+                }
+              ].map((testimonial, index) => (
+                <div key={index} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">{testimonial.avatar}</div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900">{testimonial.name}</h3>
+                      <p className="text-sm text-slate-500">{testimonial.location}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <span key={i} className="text-yellow-400">⭐</span>
+                    ))}
+                  </div>
+                  <p className="mt-4 text-slate-700">"{testimonial.testimonial}"</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
+      )}
 
-        <section id="features" className="mt-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            {
-              title: 'Fast setup',
-              description: 'Tailwind and Vite configure quickly so you can focus on building features.',
-            },
-            {
-              title: 'Responsive UI',
-              description: 'A responsive navbar and layout that looks great on desktop and mobile.',
-            },
-            {
-              title: 'Clean code',
-              description: 'A minimal design with well-structured React components and Tailwind utilities.',
-            },
-          ].map((item) => (
-            <div key={item.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-              <h2 className="text-xl font-semibold text-slate-900">{item.title}</h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">{item.description}</p>
-            </div>
-          ))}
-        </section>
-      </main>
+      <Footer />
     </div>
   );
 }
